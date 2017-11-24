@@ -1,0 +1,20 @@
+{
+  "name": "servicer",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lucat1/servicer"
+  },
+  "author": "LucaT",
+  "devDependencies": {
+    "@types/node": "8.0.53",
+    "typescript": "2.6.1"
+  },
+  "dependencies": {
+    "body-parser": "1.18.2",
+    "git-clone": "0.1.0",
+    "json-socket": "0.3.0",
+    "npm": "5.5.1",
+    "pify": "3.0.0"
+  }
+}

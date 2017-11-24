@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "es3",
+    "moduleResolution": "node",
+
+    "types": [
+      "node"
+    ],
+    "lib": [
+      "es7"
+    ],
+
+    "baseUrl": ".",
+    "sourceRoot": "src",
+    "outDir": "lib",
+    "sourceMap": true,
+    "removeComments": true
+  },
+  "include": [
+    "src"
+  ]
+}
