@@ -3,6 +3,7 @@ import { parse } from 'url'
 import { json } from 'body-parser'
 import * as pify from 'pify'
 import { API_PORT } from './constants'
+import { NotFound } from './404'
 import db from './db'
 import { benchRunner } from './spawner'
 import { IFunction } from './interfaces'
@@ -24,9 +25,10 @@ export const listener = async (req: IncomingMessage, res: ServerResponse) => {
   }
 
   if(!results.length) {
-    res.writeHead(404, { 'Content-Type': 'text/json' })
-    res.write(JSON.stringify({ code: 404 }, null, 2))
-    res.end()
+    let customHandler =Object.keys(<{ [key: string]: IFunction }>db['functions'])
+      .find(id => db['functions'][id]['url'] == '404')
+
+    results.push(customHandler || <any>NotFound)
   }
 
   results.reduce(
