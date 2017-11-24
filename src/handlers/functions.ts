@@ -1,7 +1,8 @@
-import { writeFileSync } from 'fs'
+import { writeFileSync, existsSync } from 'fs'
 import { join } from 'path'
 import { createHash } from 'crypto'
 import * as _clone from 'git-clone'
+import * as rmrf from 'rmrf'
 import * as pify from 'pify'
 import { spawn } from 'child_process'
 import { StringObject } from '../interfaces'
@@ -17,6 +18,10 @@ registerHandler('request', async (socket, { payload, action }) => {
       const id   = createHash('md5').update(<string>url).digest('hex')
       const path = join(process.cwd(), 'functions', id)
       
+    if(existsSync(path)) {
+      await Promise.resolve(rmrf(path))
+    }
+
       await clone(repoUrl, path)
       const installer = spawn('npm', ['install'], { cwd: path })
 
