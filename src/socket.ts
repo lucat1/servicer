@@ -1,7 +1,7 @@
 import { createServer, Socket } from 'net'
 import * as jsonSocket from 'json-socket'
 import { SOCKET_PORT } from './constants'
-import { ISocketData, ISocket, IHandlers, IHandler } from './interfaces'
+import { ISocketData, ISocket, IHandlers, ISocketHandler } from './interfaces'
 
 /** An object of handlers to manage the socket's messages */
 export const handlers: IHandlers = {}
@@ -43,7 +43,7 @@ export const handleMessage = async (socket: ISocket, data: ISocketData) => {
  * @param type    The action's type
  * @param handler The funtion that handles the event
  */
-export const registerHandler = (type: string, handler: IHandler) => {
+export const registerHandler = (type: string, handler: ISocketHandler) => {
   if (!<Object>handlers.hasOwnProperty(type)) {
     /** Define the type handler if it hasn't already  */
     handlers[type] = new Array()

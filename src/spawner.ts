@@ -2,19 +2,7 @@ import { readFileSync } from 'fs'
 import { runInNewContext, createContext } from 'vm'
 import { join } from 'path'
 
-export class Benchmark {
-  /** Starting time of the mesurament */
-  private start = process.hrtime()
-
-  /** Returns the elapsed time */
-  public elapsed(): number {
-    const end = process.hrtime(this.start)
-    return (end[0] * 1000) + (end[1] / 1000000)
-  }
-}
-
 export const getFunction = route => {
-  
   const mod:  { 
     exports?: Function | any
     __esModule?: boolean
@@ -65,15 +53,6 @@ export const getFunction = route => {
   return result
 }
 
-export const benchRunner = route => (req, res, next) => {
-  const timer = new Benchmark()
-  try {
-    const func = getFunction(route)
-
-    func(req, res, next)
-  } catch(err) {
-    console.warn(err)
-  }
-
-  console.log('Function executed, it took:', timer.elapsed())
-}
+export const getHandler = route => typeof route == 'function' 
+  ? route 
+  : getFunction(route)

@@ -19,13 +19,19 @@ export interface ISocketData {
   payload: StringObject | any
 }
 
-export type IHandler = (socket: ISocket, data: ISocketData) => Promise<any>
+export type ISocketHandler = (socket: ISocket, data: ISocketData) => Promise<any>
 
 export interface IHandlers {
-  [key: string]: IHandler[]
+  [key: string]: ISocketHandler[]
 }
 
-export interface IFunction {
+export interface IRoutes {
+  [key: string]: IRoute | IMiddleware
+}
+
+export type IMiddleware = (req, res, next) => void
+
+export interface IRoute {
   path: string
   id: string
   url: string

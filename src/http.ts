@@ -1,63 +1,54 @@
 import { createServer, IncomingMessage, ServerResponse } from 'http'
 import { parse } from 'url'
-import { json } from 'body-parser'
 import * as pify from 'pify'
 import { API_PORT } from './constants'
 import { NotFound } from './404'
 import db from './db'
-import { benchRunner } from './spawner'
-import { IFunction } from './interfaces'
- 
+import { getHandler } from './spawner'
+import { Benchmark } from './bench'
+import { IRoute, IRoutes, IMiddleware } from './interfaces'
+
+export const matches = url => id => 
+  url == db['functions'][id]['url']
+
+export const flatten = (flat: IRoute[], toFlatten?: IRoutes) => 
+  flat.concat(toFlatten instanceof Array ? flatten(toFlatten) : toFlatten)
+
 /**
  * Handles every request to the api port, finding the
- * correct url action, executing it and then call others if the
- * request executed next()
+ * correct url action, executing it with middlewars with a
+ * full express-like api, including next functions.
  * 
  * @param req The server/client request
  * @param res The server/client response
  */
-export const listener = async (req: IncomingMessage, res: ServerResponse) => {
-  const results = Object.keys(<{ [key:string]: IFunction }>db['functions'])
-    .filter(id => parse(req.url).pathname == db['functions'][id]['url'])
+export const Router = async (req: IncomingMessage, res: ServerResponse) => {
+  const functions = <IRoutes>db['functions']
+  const url       = parse(req.url).pathname
+  const ids       = Object.keys(functions)
+  const results   = ids.filter(matches(url)).map(id => functions[id])
 
-  if(req.method == 'POST') {
-    results.unshift(json())
-  }
-
+  /** 404 handle case */
   if(!results.length) {
-    let customHandler =Object.keys(<{ [key: string]: IFunction }>db['functions'])
-      .find(id => db['functions'][id]['url'] == '404')
-
-    results.push(customHandler || <any>NotFound)
+    const customHandler = functions[ids.find(matches('404'))]
+    results.push(customHandler || NotFound)
   }
 
-  results.reduce(
-    (prev, id) => {
-      const route = typeof id == 'function' ? id : db['functions'][id]
-      return runRoute(route, req, res, prev)
-    }, 
-    Promise.resolve(true)
-  )
+  const timer = new Benchmark()
+
+  const handlers = results
+    .map(getHandler)
+    .reduce(flatten, [])
+  
+  let i = -1
+  const next = () => {
+    i++
+    handlers[i](req, res, next)
+  }
+
+  next()
+
+  console.info('Route', url, 'executed in', timer.elapsed() + 'ms')
 }
 
-export const runRoute = async (route, req, res, previousValue) => {
-  if(await previousValue) {
-    let returnValue = false
- 
-    const next = decision => returnValue = true
-
-    /** Middleware */
-    if (typeof route == 'function') {
-      await pify(route)(req, res)
-
-      returnValue = true
-    } else {
-      /** Normal route */
-      await Promise.resolve(benchRunner(route)(req, res, next))
-    }
-
-    return returnValue
-  } else return false
-}
-
-export const openApi = (callback: Function) => createServer(listener).listen(API_PORT, callback)
+export const openApi = (callback: Function) => createServer(Router).listen(API_PORT, callback)
