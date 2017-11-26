@@ -44,14 +44,13 @@ let i = -1
  * @param req The server/client request
  * @param res The server/client response
  */
-const loop = (handlers: IMiddleware[], req: IncomingMessage, res: ServerResponse) => 
-  () => {
-    i++
+export const loop = (handlers: IMiddleware[], req, res) => () => {
+  i++
 
-    if(handlers[i]) {
-      handlers[i](req, res, loop(handlers, req, res))
-    }
+  if(handlers[i]) {
+    handlers[i](req, res, loop(handlers, req, res))
   }
+}
 
 /**
  * Handles every request to the api port, finding the
