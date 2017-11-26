@@ -36,9 +36,7 @@ export const Router = async (req: IncomingMessage, res: ServerResponse) => {
 
   const timer = new Benchmark()
 
-  const handlers = results
-    .map(getHandler)
-    .reduce(flatten, [])
+  const handlers = results.map(getHandler).reduce(flatten, [])
   
   let i = -1
   const next = () => {
