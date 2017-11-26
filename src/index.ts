@@ -1,9 +1,9 @@
 import * as rd from 'readline'
-import db from 'src/db'
-import { openSocket } from 'src/socket'
-import { openApi } from 'src/http'
-import { API_PORT, SOCKET_PORT } from 'src/constants'
-import 'src/handlers/load'
+import db from './db'
+import { openSocket } from './socket'
+import { openApi } from './http'
+import { API_PORT, SOCKET_PORT } from './constants'
+import './handlers/load'
 
 openSocket(any => console.log('The socket is listening on port', SOCKET_PORT))
 openApi(any => console.log('The https api is listening on port', API_PORT))
