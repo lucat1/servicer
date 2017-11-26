@@ -1,9 +1,9 @@
 import * as pify from 'pify'
 import { parse } from 'url'
-import { API_PORT }   from 'src/constants'
-import { NotFound }   from 'src/404'
-import { getHandler } from 'src/spawner'
-import { Benchmark }  from 'src/bench'
+import { API_PORT }   from './constants'
+import { NotFound }   from './404'
+import { getHandler } from './spawner'
+import { Benchmark }  from './bench'
 import {
   createServer,
   IncomingMessage,
@@ -13,8 +13,8 @@ import {
   IRoute, 
   IRoutes, 
   IMiddleware 
-} from 'src/interfaces'
-import db from 'src/db'
+} from './interfaces'
+import db from './db'
 
 /**
  * Checks if a function in the database matches a given url
@@ -32,25 +32,6 @@ export const matches = url => id =>
  */
 export const flatten = (flat: IRoute[], toFlatten?: IRoutes) => 
   flat.concat(toFlatten instanceof Array ? flatten(toFlatten) : toFlatten)
-
-/** The looping index */
-let i = -1
-
-/**
- * Generates a looper that keeps executing middlewares
- * as long as they return the next call.
- * 
- * @param handlers The array of middlewares
- * @param req The server/client request
- * @param res The server/client response
- */
-export const loop = (handlers: IMiddleware[], req, res) => () => {
-  i++
-
-  if(handlers[i]) {
-    handlers[i](req, res, loop(handlers, req, res))
-  }
-}
 
 /**
  * Handles every request to the api port, finding the
@@ -75,14 +56,32 @@ export const Router = async (req: IncomingMessage, res: ServerResponse) => {
   const timer = new Benchmark()
 
   const handlers = results.map(getHandler).reduce(flatten, [])
-  
-  /** Reset the looping index on each request */
-  i = -1
 
-  /** Start the middleware looping */
-  loop(handlers, req, res)
+  res.on('finish', e => {
+    console.info('[' + url + ']', 'Executed in', timer.elapsed())
+  })
 
-  console.info('Route', url, 'executed in', timer.elapsed() + 'ms')
+  /** The looping index */
+  let i = -1
+
+  /**
+   * Generates a looper that keeps executing middlewares
+   * as long as they return the next call.
+   * 
+   * @param handlers The array of middlewares
+   * @param req The server/client request
+   * @param res The server/client response
+   */
+  const next = () => {
+    i++
+
+    if (handlers[i]) {
+      console.log('[' + url + ']', 'Executing middleware', i)
+      handlers[i](req, res, next)
+    }
+  }
+
+  next()
 }
 
 export const openApi = (callback: Function) => createServer(Router).listen(API_PORT, callback)
