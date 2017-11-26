@@ -1,7 +1,12 @@
 import { createServer, Socket } from 'net'
 import * as jsonSocket from 'json-socket'
-import { SOCKET_PORT } from './constants'
-import { ISocketData, ISocket, IHandlers, ISocketHandler } from './interfaces'
+import { SOCKET_PORT } from 'src/constants'
+import { 
+  ISocketData, 
+  ISocket, 
+  IHandlers, 
+  ISocketHandler 
+} from 'src/interfaces'
 
 /** An object of handlers to manage the socket's messages */
 export const handlers: IHandlers = {}

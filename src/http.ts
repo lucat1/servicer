@@ -1,18 +1,57 @@
-import { createServer, IncomingMessage, ServerResponse } from 'http'
-import { parse } from 'url'
 import * as pify from 'pify'
-import { API_PORT } from './constants'
-import { NotFound } from './404'
-import db from './db'
-import { getHandler } from './spawner'
-import { Benchmark } from './bench'
-import { IRoute, IRoutes, IMiddleware } from './interfaces'
+import { parse } from 'url'
+import { API_PORT }   from 'src/constants'
+import { NotFound }   from 'src/404'
+import { getHandler } from 'src/spawner'
+import { Benchmark }  from 'src/bench'
+import {
+  createServer,
+  IncomingMessage,
+  ServerResponse
+} from 'http'
+import { 
+  IRoute, 
+  IRoutes, 
+  IMiddleware 
+} from 'src/interfaces'
+import db from 'src/db'
 
+/**
+ * Checks if a function in the database matches a given url
+ * 
+ * @param url The url to be matched
+ */
 export const matches = url => id => 
   url == db['functions'][id]['url']
 
+/**
+ * Flattens an array, recursively, using es6 reducers
+ * 
+ * @param flat The previous result
+ * @param toFlatten The new array to be merged
+ */
 export const flatten = (flat: IRoute[], toFlatten?: IRoutes) => 
   flat.concat(toFlatten instanceof Array ? flatten(toFlatten) : toFlatten)
+
+/** The looping index */
+let i = -1
+
+/**
+ * Generates a looper that keeps executing middlewares
+ * as long as they return the next call.
+ * 
+ * @param handlers The array of middlewares
+ * @param req The server/client request
+ * @param res The server/client response
+ */
+const loop = (handlers: IMiddleware[], req: IncomingMessage, res: ServerResponse) => 
+  () => {
+    i++
+
+    if(handlers[i]) {
+      handlers[i](req, res, loop(handlers, req, res))
+    }
+  }
 
 /**
  * Handles every request to the api port, finding the
@@ -38,13 +77,11 @@ export const Router = async (req: IncomingMessage, res: ServerResponse) => {
 
   const handlers = results.map(getHandler).reduce(flatten, [])
   
-  let i = -1
-  const next = () => {
-    i++
-    handlers[i](req, res, next)
-  }
+  /** Reset the looping index on each request */
+  i = -1
 
-  next()
+  /** Start the middleware looping */
+  loop(handlers, req, res)
 
   console.info('Route', url, 'executed in', timer.elapsed() + 'ms')
 }
