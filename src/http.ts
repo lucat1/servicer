@@ -42,7 +42,7 @@ export const flatten = (flat: IRoute[], toFlatten?: IRoutes) =>
  * @param res The server/client response
  */
 export const Router = async (req: IncomingMessage, res: ServerResponse) => {
-  const functions = <IRoutes>db['functions']
+  const functions = <IRoutes>db.getState()['functions']
   const url       = parse(req.url).pathname
   const ids       = Object.keys(functions)
   const results   = ids.filter(matches(url)).map(id => functions[id])
@@ -58,7 +58,7 @@ export const Router = async (req: IncomingMessage, res: ServerResponse) => {
   const handlers = results.map(getHandler).reduce(flatten, [])
 
   res.on('finish', e => {
-    console.info('[' + url + ']', 'Executed in', timer.elapsed())
+    console.info('[HTTP][' + url + ']', 'Executed in', timer.elapsed())
   })
 
   /** The looping index */
@@ -76,7 +76,7 @@ export const Router = async (req: IncomingMessage, res: ServerResponse) => {
     i++
 
     if (handlers[i]) {
-      console.log('[' + url + ']', 'Executing middleware', i)
+      console.log('[HTTP][' + url + ']', 'Executing middleware', i)
       handlers[i](req, res, next)
     }
   }

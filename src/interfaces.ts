@@ -1,29 +1,14 @@
 import { Socket } from 'net'
+import { AnyAction } from 'redux'
 
 export interface ISocket extends Socket {
-  sendMessage: (data: ISocketData) => void
+  sendMessage: (data: AnyAction) => void
 }
 
 /**
  * An object composed by strings or other nested StringObjects
  */
 export type StringObject = { [key: string]: string | StringObject | Object }
-
-/**
- * The cutom jsonSocket data
- */
-export interface ISocketData {
-  type: 'info' | 'result' | 'error' | string
-  action: 'ADD_FUNCTION' | 'REMOVE_FUNCTION' | 'EDIT_FUNCTION' | string
-  message?: string
-  payload: StringObject | any
-}
-
-export type ISocketHandler = (socket: ISocket, data: ISocketData) => Promise<any>
-
-export interface IHandlers {
-  [key: string]: ISocketHandler[]
-}
 
 export interface IRoutes {
   [key: string]: IRoute | IMiddleware
@@ -32,8 +17,26 @@ export interface IRoutes {
 export type IMiddleware = (req, res, next) => void
 
 export interface IRoute {
+  id:   string
   path: string
-  id: string
-  url: string
+  url:  string
   name: string
+  repo: string
+}
+
+export interface IStore {
+  functions: {
+    [key: string]: IRoute 
+  }
+}
+
+export type IFunctionAction = { 
+  type: string, 
+  payload: IFunctioPayload
+}
+
+export interface IFunctioPayload extends IRoute {
+  changes: IFunctioPayload
+
+  [key: string]: any
 }
