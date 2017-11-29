@@ -1,10 +1,8 @@
-import { createServer, Socket, connect } from 'net'
-import { inspect }     from 'util'
-import { AnyAction }   from 'redux'
-import * as jsonSocket from 'json-socket'
-import { SOCKET_PORT } from './constants'
-import { ISocket }     from './interfaces'
-import db              from './db'
+import { createServer } from 'net'
+import * as jsonSocket  from 'json-socket'
+import { SOCKET_PORT }  from './constants'
+import { ISocket }      from './interfaces'
+import db               from './db'
 
 export const connections: ISocket[] = []
 
