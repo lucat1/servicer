@@ -32,8 +32,6 @@ const engine  = debounceStorage({
     const keys = JSON.stringify(state).match(/[^\\]":/g).length
     const json = JSON.stringify(state, null, keys <= 200 ? 2 : 0)
 
-    console.log('action#STATE_SAVED', state)
-
     return writeFile(cachePath, json)
   }
 }, 1000)
@@ -49,7 +47,6 @@ const store = createStoreWithMiddlewares(reducer)
 const loader = createLoader(engine)
 
 loader(store)
-  .then(newState => console.log('action#STATE_LOADED', newState))
   .catch(err => console.error('action#STATE_LOAD_ERROR', '\n', err))
 
 

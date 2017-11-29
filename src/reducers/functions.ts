@@ -32,10 +32,7 @@ export default (state, action: IFunctionAction) => {
 
       return {
         ...state,
-        functions: {
-          ...state.functions,
-          [id]: data
-        }
+        [id]: data
       }
     }
 
@@ -49,12 +46,9 @@ export default (state, action: IFunctionAction) => {
 
       return {
         ...state,
-        functions: {
-          ...state.functions,
-          [id]: {
-            ...state.functions[id],
-            status: 'INSTALLING'
-          }
+        [id]: {
+          ...state[id],
+          status: 'INSTALLING'
         }
       }
     }
@@ -64,12 +58,9 @@ export default (state, action: IFunctionAction) => {
 
       return {
         ...state,
-        functions: {
-          ...state.functions,
-          [id]: {
-            ...state.functions[id],
-            status: 'DONE'
-          }
+        [id]: {
+          ...state[id],
+          status: 'DONE'
         }
       } 
     }
@@ -83,52 +74,43 @@ export default (state, action: IFunctionAction) => {
 
       return {
         ...state,
-        functions: {
-          ...state.functions,
-          [id]: {
-            ...state.functions[id],
-            status: 'REMOVING'
-          }
+        [id]: {
+          ...state[id],
+          status: 'REMOVING'
         }
       } 
     }
 
     case 'REMOVED_FUNCTION': {
-      return {
-        ...state,
-        functions: Object
-          .keys(state.functions)
-          .reduce(removeKeys(state.functions, action.payload.id), {})
-      }
+      return Object
+        .keys(state)
+        .reduce(removeKeys(state, action.payload.id), {})
     }
 
     case 'EDIT_FUNCTION': {
       const { id } = action.payload
 
-      /**
-        /** Remove the current function /
-        db.dispatch({
-          type: 'REMOVE_FUNCTION',
-          payload: { id }
-        })
-
-        db.dispatch({
-          type: 'ADD_FUNCTION',
-          payload: {
-            ...state.functions[id], /** The data from the old function /
-            ...action.payload.changes
-          }
+      
+      /** Remove the current function */
+      db.dispatch({
+        type: 'REMOVE_FUNCTION',
+        payload: { id }
       })
-      */
+
+      db.dispatch({
+        type: 'ADD_FUNCTION',
+        payload: {
+          ...state.functions[id], /** The data from the old function */
+          ...action.payload.changes
+        }
+      })
+      
 
       return {
         ...state,
-        functions: {
-          ...state.functions,
-          [id]: {
-            ...state.functions[id],
-            status: 'CHANGING'
-          }
+        [id]: {
+          ...state[id],
+          status: 'CHANGING'
         }
       }
     }

@@ -15,8 +15,18 @@ export default (store: Store<any>) =>
         console.log(`actions#${type}('NO_ID') ${payload.url} -> ${payload.repo}`)
       break
 
+      case 'REDUX_STORAGE_LOAD':
+        console.log('actions#STATE_LOAD([Object])')
+      break
+
+
+      case 'REDUX_STORAGE_SAVE':
+        console.log('actions#STATE_SAVE([Object])')
+      break
+
       default:
-        console.log(`actions#${type}(${payload.id || 'NO_ID'})`)
+        if(payload.error) console.warn(payload.error)
+        console.log(`actions#${type}(${payload.id || payload.error || 'NO_ID'})`)
       break
 
     }
