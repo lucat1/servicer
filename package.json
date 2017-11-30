@@ -16,6 +16,7 @@
   "dependencies": {
     "body-parser": "1.18.2",
     "git-clone": "0.1.0",
+    "ip": "1.1.5",
     "json-socket": "0.3.0",
     "pify": "3.0.0",
     "redux": "3.7.2",
