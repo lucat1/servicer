@@ -5,33 +5,23 @@
 # <-- | /\\-//\-\/-/\\-//\ | -->
 
 #
-# Do a full installation and compilation in
-# The full-blown image to then move just the
-# Compiled files in the smaller production image
+# Do a full installation and compilation then
+# remove all unnecessary files and compilation packages
 # 
 FROM mhart/alpine-node:8
 WORKDIR /app
-COPY            \
-  data.json     \
-  yarn.lock     \
-  tsconfig.json \
-  package.json  \ 
-  ./
-
+COPY  data.json     \
+      yarn.lock     \
+      tsconfig.json \
+      package.json  \ 
+      ./
+RUN apk update && apk upgrade && \
+    apk add --no-cache bash git openssh
 ADD src ./src/
 RUN yarn install
 RUN yarn build
 RUN yarn install --production
-
-#
-# From the production base image, copy the necessary files
-# to minimize the typescript/devDependencies overload
-#
-FROM mhart/alpine-node:base-8
-WORKDIR /app
-COPY --from=0 /app/lib          ./lib/
-COPY --from=0 /app/node_modules ./node_modules/
-COPY --from=0 /app/data.json    ./
+RUN rm -rf ./src
 EXPOSE 8080
 EXPOSE 3434
 CMD ["node", "lib"]
